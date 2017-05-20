@@ -23,6 +23,7 @@ class EatController extends Yaf_Controller_Abstract {
 		$config_path = APPLICATION_PATH . '/conf/application.ini';
 		$config = new Yaf_Config_Ini($config_path);
 		$map_config = $config->map->get('map');
+		$public_config = $config->public->get('public');
 
 		if (substr_count($params['landmark'], ',') > 0) {
 			$keyword = implode('|', explode(',', $params['landmark']));
@@ -112,8 +113,9 @@ class EatController extends Yaf_Controller_Abstract {
 		$choose['address'] = $around_search->pois[$choose_rand]->address;
 		$choose['time'] = time();
 
-		echo json_encode($choose);
-		return false;
+		$this->getView()->assign('choose', $choose);
+		$this->getView()->assign('public', $public_config);
+		return TRUE;
 	}
 
 	/**
@@ -178,13 +180,73 @@ class EatController extends Yaf_Controller_Abstract {
 		$params['city'] = $this->getRequest()->getPost('city', '');
 		$params['range'] = $this->getRequest()->getPost('range', 1);
 		$params['feel'] = $this->getRequest()->getPost('feel', '');
-		$params['eat_fav'] = $this->getRequest()->getPost('eat', '');
+		$params['eat_fav'] = $this->getRequest()->getPost('eat_fav', '');
 
 		// 参数检查
-		if ($params['landmark'] == '') {
+		$check_res = $this->checkParams($params);
+
+		if (!$check_res) {
 			return false;
 		} else {
-			return $params;
+			return true;
 		}
+	}
+
+	/**
+	 * @param $params
+	 * @return array|bool
+	 */
+	private function checkParams($params)
+	{
+		$data = [];
+		if (empty($params['landmark'])) {
+			return false;
+		}
+
+		$landmark = filter_var($params['landmark'], FILTER_SANITIZE_STRING);
+		$landmark_len = mb_strlen($landmark, 'utf-8');
+
+		if (!$landmark || $landmark_len > 10) {
+			return false;
+		} else {
+			$data['landmark'] = $landmark;
+		}
+
+		if (!empty($params['city'])) {
+			$city = filter_var($params['landmark'], FILTER_SANITIZE_STRING);
+			if (!$city) {
+				return false;
+			} else {
+				$data['city'] = $city;
+			}
+		}
+
+		if (!empty($params['range'])) {
+			$range = filter_var($params['range'], FILTER_VALIDATE_INT, ['min_range' => 1, 'max_range' => 3]);
+			if (!$range) {
+				return false;
+			} else {
+				$data['range'] = $range;
+			}
+		}
+
+		if (!empty($params['feel'])) {
+			$feel = filter_var($params['feel'], FILTER_SANITIZE_STRING);
+			if (!$feel) {
+				return false;
+			} else {
+				$data['feel'] = $feel;
+			}
+		}
+
+		if (!empty($params['eat_fav'])) {
+			$eat_fav = filter_var($params['eat_fav'], FILTER_SANITIZE_STRING);
+			if (!$eat_fav) {
+				return false;
+			} else {
+				$data['eat_fav'] = $eat_fav;
+			}
+		}
+		return $data;
 	}
 }

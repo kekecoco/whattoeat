@@ -84,7 +84,7 @@
 										<div class="col-sm-5 col-sm-offset-1">
 											<div class="form-group">
 												<label>Range</label>
-												<select class="form-control">
+												<select id="range" name="range" class="form-control">
 													<option disabled="" selected="">- range -</option>
 													<option value="1">1km</option>
 													<option value="2">2km</option>
@@ -100,7 +100,7 @@
 										<div class="col-sm-5 col-sm-offset-1">
 											<div class="form-group">
 												<label>How to Feel</label>
-												<select class="form-control">
+												<select id="eat_feel" name="eat_feel" class="form-control">
 													<option disabled="" selected="">- type -</option>
 													<option value="1">Normal</option>
 													<option value="2">Happy</option>
@@ -111,7 +111,7 @@
 										<div class="col-sm-5">
 											<div class="form-group">
 												<label>Especially want to eat</label>
-												<input type="text" class="form-control" id="eat" placeholder="Especially want to eat?"/>
+												<input type="text" class="form-control" id="eat_fav" name="eat_fav" placeholder="Especially want to eat?"/>
 											</div>
 										</div>
 									</div>
@@ -120,7 +120,7 @@
 							<div class="wizard-footer">
 								<div class="pull-right">
 									<input type='button' class='btn btn-next btn-fill btn-success btn-wd' name='next' value='Next' />
-									<input type='button' class='btn btn-finish btn-fill btn-success btn-wd' name='finish' value='Finish'/>
+									<input type='submit' class='btn btn-finish btn-fill btn-success btn-wd' name='finish' value='Finish'/>
 								</div>
 
 								<div class="pull-left">
@@ -158,10 +158,28 @@
 
 <script type="text/javascript">
 	$(document).ready(function (){
-        $('#eat_info').ajaxForm(function() {
-            alert("Thank you for your comment!");
+
+        var options = {
+            beforeSubmit:  checkParam,
+            target: '#eat_info',
+            url: '<?php echo $url;?>/eat/index',
+            type: 'post'
+        };
+
+        $('#eat_info').submit(function() {
+            $(this).ajaxSubmit(options);
+            return false;
         });
-	});
+        
+        function checkParam(formData, jqForm, options) {
+            for (var i=0; i < formData.length; i++) {
+                if (formData[i].name === 'landmark' && !formData[i].value) {
+                    alert('请输入标志地点');
+                    return false;
+                }
+            }
+        }
+    });
 </script>
 
 </html>
